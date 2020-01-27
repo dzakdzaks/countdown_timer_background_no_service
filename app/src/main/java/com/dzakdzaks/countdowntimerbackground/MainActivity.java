@@ -1,5 +1,9 @@
 package com.dzakdzaks.countdowntimerbackground;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -18,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText mEditTextInput;
     private TextView mTextViewCountDown;
+    private TextView textRealtime;
     private Button mButtonSet;
     private Button mButtonStartPause;
     private Button mButtonReset;
@@ -31,6 +36,9 @@ public class MainActivity extends AppCompatActivity {
     private long mTimeLeftInMillis;
     private long mEndTime;
 
+    private BroadcastReceiver minuteUpdateReceiver;
+    private int counter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
 
         mEditTextInput = findViewById(R.id.edit_text_input);
         mTextViewCountDown = findViewById(R.id.text_view_countdown);
+        textRealtime = findViewById(R.id.textRealtime);
 
         mButtonSet = findViewById(R.id.button_set);
         mButtonStartPause = findViewById(R.id.button_start_pause);
@@ -232,5 +241,26 @@ public class MainActivity extends AppCompatActivity {
                 startTimer();
             }
         }
+        startMinuteUpdater();
+    }
+
+
+    private void startMinuteUpdater() {
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(Intent.ACTION_TIME_TICK);
+        minuteUpdateReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                counter++;
+                textRealtime.setText(String.valueOf(counter));
+            }
+        };
+        registerReceiver(minuteUpdateReceiver, intentFilter);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(minuteUpdateReceiver);
     }
 }
